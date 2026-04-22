@@ -361,7 +361,7 @@ const form = reactive({
 
                   Despachar Ambulância
                 </button>
-
+                <RouterLink to="/dashboard">
                 <button
                   type="button"
                   class="w-full bg-white text-slate-500 border border-slate-200 mt-3 rounded-full py-4 font-bold flex items-center justify-center gap-3 hover:bg-slate-50 hover:text-slate-700 transition-colors"
@@ -370,6 +370,7 @@ const form = reactive({
 
                   Cancelar Registro
                 </button>
+                </RouterLink>
               </div>
             </div>
           </form>

@@ -23,74 +23,51 @@ onMounted(async () => {
       <div class="px-6 mb-10">
         <span class="text-xl font-bold text-blue-900 dark:text-blue-50 tracking-tight">SIGE Emergências</span>
       </div>
-      <nav class="flex-1 space-y-1 flex flex-col">
-        <RouterLink to="/dashboard" class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-200 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all flex items-center mx-2 rounded-full">
-          <span class="material-symbols-outlined mr-3">dashboard</span>
+      <nav class="flex-1 space-y-1 flex flex-col px-2">
+        <RouterLink to="/dashboard" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
+          <span class="material-symbols-outlined">dashboard</span>
           <span class="font-medium">Dashboard</span>
         </RouterLink>
-        <RouterLink to="/chamado" class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-200 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all flex items-center mx-2 rounded-full">
-          <span class="material-symbols-outlined mr-3">pending_actions</span>
+        <RouterLink to="/chamado" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
+          <span class="material-symbols-outlined">pending_actions</span>
           <span class="font-medium">Chamados</span>
         </RouterLink>
-        <RouterLink to="/equipe" class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-200 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all flex items-center mx-2 rounded-full">
-          <span class="material-symbols-outlined mr-3">groups_2</span>
+        <RouterLink to="/equipe" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
+          <span class="material-symbols-outlined">groups_2</span>
           <span class="font-medium">Equipe</span>
         </RouterLink>
-        <RouterLink to="/veiculos" class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-200 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all flex items-center mx-2 rounded-full">
-          <span class="material-symbols-outlined mr-3">ambulance</span>
+        <RouterLink to="/veiculos" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
+          <span class="material-symbols-outlined">ambulance</span>
           <span class="font-medium">Veículos</span>
         </RouterLink>
-        <RouterLink to="/settings" class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-200 px-4 py-3 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all flex items-center mx-2 rounded-full">
-          <span class="material-symbols-outlined mr-3">settings</span>
+        <RouterLink to="/settings" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 rounded-full transition-all">
+          <span class="material-symbols-outlined">settings</span>
           <span class="font-medium">Configurações</span>
         </RouterLink>
         <div class="flex-1"></div>
-        <RouterLink to="/login" class="text-red-500 hover:text-red-700 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center mx-2 rounded-full mb-4">
-          <span class="material-symbols-outlined mr-3">logout</span>
+        <RouterLink to="/login" class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-full transition-all">
+          <span class="material-symbols-outlined">logout</span>
           <span class="font-medium">Sair</span>
         </RouterLink>
       </nav>
     </aside>
 
     <!-- CONTENT -->
-    <main class="flex-1 ml-64 p-8">
+    <main class="flex-1 ml-64 p-8 overflow-y-auto">
       <header class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-bold text-blue-900">Meu Perfil</h1>
+        <h1 class="text-2xl font-bold text-blue-900">Configurações do Sistema</h1>
         <RouterLink to="/perfil" class="flex items-center gap-2 text-black hover:text-blue-600 transition-colors font-bold">
           <span>Meu Perfil</span>
           <span class="material-symbols-outlined">account_circle</span>
         </RouterLink>
       </header>
 
-      <div class="bg-white rounded-2xl p-8 shadow-sm max-w-2xl border">
-        <div v-if="carregando" class="flex justify-center p-12">
-          <span class="animate-spin material-symbols-outlined text-4xl text-blue-900">progress_activity</span>
-        </div>
-        <div v-else-if="usuario" class="space-y-6">
-          <div class="flex items-center gap-6 pb-6 border-b">
-            <div class="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-900">
-              <span class="material-symbols-outlined text-6xl">account_circle</span>
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold">{{ usuario.name }}</h2>
-              <p class="text-slate-500">{{ usuario.email }}</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-bold text-slate-400 uppercase">ID de Usuário</label>
-              <p class="font-mono text-sm bg-slate-50 p-2 rounded">{{ usuario.id }}</p>
-            </div>
-            <div>
-              <label class="text-xs font-bold text-slate-400 uppercase">Status</label>
-              <p class="text-emerald-600 font-bold">Ativo / Central</p>
-            </div>
-          </div>
-        </div>
-        <div v-else class="text-center text-red-500">
-          Não foi possível carregar as informações do usuário.
-        </div>
+      <div class="flex flex-col items-center justify-center h-[60vh] text-slate-400">
+        <span class="material-symbols-outlined text-9xl mb-4">account_circle</span>
+        <h2 class="text-2xl font-bold">Perfil do Usuário</h2>
+        <p>A pagina de perfil do usuário estará disponível em breve.</p>
       </div>
     </main>
   </div>
 </template>
+

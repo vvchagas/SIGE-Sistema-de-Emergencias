@@ -63,7 +63,7 @@ const toggleMode = () => {
               type="email"
               v-model="form.email"
               placeholder="E-mail"
-              class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400;"
+              class="w-full px-6 py-4 border-2 border-black-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-black-400;"
               required
             />
 
@@ -71,16 +71,16 @@ const toggleMode = () => {
               type="text"
               v-model="form.cpf"
               placeholder="CPF (somente números)"
-              class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400;"
+              class="w-full px-6 py-4 border-2 border-black-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-black-400;"
               required
             />
 
             <div class="px-1">
-              <label class="text-xs text-gray-500 block mb-1 ml-2">Data de Nascimento</label>
+              <label class="text-xs text-black-500 block mb-1 ml-2">Data de Nascimento</label>
               <input
                 type="date"
                 v-model="form.nascimento"
-                class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400;"
+                class="w-full px-6 py-4 border-2 border-black-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-black-400;"
                 required
               />
             </div>
@@ -89,7 +89,7 @@ const toggleMode = () => {
               type="tel"
               v-model="form.telefone"
               placeholder="Telefone (DDD + Número)"
-              class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400;"
+              class="w-full px-6 py-4 border-2 border-black-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-black-400;"
               required
             />
           </div>
@@ -100,7 +100,7 @@ const toggleMode = () => {
             type="password"
             v-model="form.senha"
             placeholder="Senha"
-            class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400;"
+            class="w-full px-6 py-4 border-2 border-black-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-black-400;"
             required
           />
         </div>

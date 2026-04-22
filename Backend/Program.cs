@@ -8,7 +8,6 @@ using SIGEApi.Data;
 using SIGEApi.Models;
 using SIGEApi.Repositories;
 using SIGEApi.Services;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +59,8 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddScoped<AutenticacaoService>();
 builder.Services.AddScoped<AmbulanciaService>();
 builder.Services.AddScoped<AmbulanciaRepository>();
+builder.Services.AddScoped<ParamedicoService>();
+builder.Services.AddScoped<ParamedicoRepository>();
 
 var app = builder.Build();
 

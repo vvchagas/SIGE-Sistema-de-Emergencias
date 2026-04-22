@@ -1,9 +1,11 @@
-﻿namespace SIGEApi.DTOs.ParamedicoDtos
+﻿namespace SIGEApi.Models
 {
-    public class ParamedicoGetDTO
+    public class Paramedico
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
+
         public string Name { get; set; }
+
         public string Cpf { get; set; }
 
         public string Telefone { get; set; }

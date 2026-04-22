@@ -59,7 +59,7 @@ const form = reactive({
     <header
       class="flex justify-between items-center w-full pl-72 pr-8 h-20 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-40 border-b border-slate-100 dark:border-slate-800">
       <h1 class="text-2xl font-bold font-headline text-blue-900 dark:text-blue-400 tracking-tight">
-        SIGE Dashboard
+        Dashboard
       </h1>
       <div class="flex items-center space-x-6">
         <div class="relative hidden lg:block">
@@ -238,10 +238,7 @@ const form = reactive({
                   Livre • USB-09
                 </p>
               </div>
-              <button
-                class="p-2 bg-primary-fixed rounded-full text-on-primary-fixed-variant hover:bg-secondary-fixed transition-colors">
-                <span class="material-symbols-outlined text-xl" data-icon="chat">chat</span>
-              </button>
+
             </div>
             <!-- Paramedic Item -->
             <div class="bg-surface-container-lowest p-3 rounded-xl flex items-center space-x-3 shadow-sm">
@@ -254,10 +251,7 @@ const form = reactive({
                   Livre • Moto-01
                 </p>
               </div>
-              <button
-                class="p-2 bg-primary-fixed rounded-full text-on-primary-fixed-variant hover:bg-secondary-fixed transition-colors">
-                <span class="material-symbols-outlined text-xl" data-icon="chat">chat</span>
-              </button>
+
             </div>
             <!-- Paramedic Item -->
             <div class="bg-surface-container-lowest p-3 rounded-xl flex items-center space-x-3 shadow-sm">
@@ -272,10 +266,7 @@ const form = reactive({
                   Livre • USA-07
                 </p>
               </div>
-              <button
-                class="p-2 bg-primary-fixed rounded-full text-on-primary-fixed-variant hover:bg-secondary-fixed transition-colors">
-                <span class="material-symbols-outlined text-xl" data-icon="chat">chat</span>
-              </button>
+
             </div>
             <!-- Paramedic Item (Unavailable/Standby Tonal variation) -->
             <div class="bg-surface-container-high/50 p-3 rounded-xl flex items-center space-x-3 opacity-60">
@@ -290,10 +281,12 @@ const form = reactive({
               </div>
             </div>
           </div>
+          <RouterLink to="/Equipe">
           <button
             class="w-full py-3 border-2 border-dashed border-outline-variant rounded-xl text-outline font-bold text-sm hover:bg-surface-container-high hover:border-outline transition-all uppercase tracking-widest">
             Ver todos paramédicos
           </button>
+          </RouterLink>
         </section>
       </div>
     </main>
