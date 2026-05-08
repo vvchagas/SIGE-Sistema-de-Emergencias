@@ -35,7 +35,7 @@ O projeto adota uma arquitetura separada, garantindo alta performance e uma inte
 
 ### Frontend
 - **Framework:** Vue.js
-- **Estilização:** Tailwind CSS (UI limpa, baseada em componentes)
+- **Estilização:** Bootstrap 5 (UI limpa, baseada em componentes)
 - **Ferramentas:** Visual Studio Code
 
 ### Backend
@@ -52,4 +52,4 @@ O projeto adota uma arquitetura separada, garantindo alta performance e uma inte
 
 1. **Clone o repositório:**
    ```bash
-   git clone https://github.com/vvchagas/SIGE-Sistema-de-Atendimento-Urgentes.git
+   git clone https://github.com/vvchagas/SIGE-Sistema-de-Emergencias.git

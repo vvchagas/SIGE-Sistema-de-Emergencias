@@ -7,5 +7,4 @@ import { RouterView } from 'vue-router'
 </template>
 
 <style>
-/* Estilos globais configurados no tailwind/index.html */
 </style>

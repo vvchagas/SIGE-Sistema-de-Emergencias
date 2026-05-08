@@ -2,8 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '../views/DashboardView.vue'
 import LoginView from '../views/LoginView.vue'
 import ChamadoView from '../views/ChamadoView.vue'
-
-// Importação das novas views
 import PerfilView from '../views/PerfilView.vue'
 import EquipeView from '../views/EquipeView.vue'
 import SettingsView from '../views/SettingsView.vue'
