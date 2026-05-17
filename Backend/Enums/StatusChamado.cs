@@ -1,6 +1,9 @@
 ﻿namespace SIGEApi.Enums
 {
-    public class StatusChamado
+    public enum StatusChamado
     {
+        Aguardando,
+        EmAndamento,
+        Finalizado
     }
 }

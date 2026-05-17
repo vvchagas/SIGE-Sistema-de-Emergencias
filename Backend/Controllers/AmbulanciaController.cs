@@ -31,7 +31,7 @@ namespace SIGEApi.Controllers
             }
         }
         [HttpGet]
-        public async Task<ActionResult<List<Ambulancia>>> ListarTodasAmbulancias(int pagina, int quantidade)
+        public async Task<ActionResult<List<Ambulancia>>> ListarTodasAmbulancias([FromQuery] int pagina, [FromQuery] int quantidade)
         {
             try
             {

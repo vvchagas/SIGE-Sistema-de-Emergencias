@@ -26,7 +26,7 @@ namespace SIGEApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Paramedico>>> ListarParamedicos(int pagina, int quantidade, bool? ocupado)
+        public async Task<ActionResult<List<Paramedico>>> ListarParamedicos([FromQuery] int pagina, [FromQuery]  int quantidade, [FromQuery] bool? ocupado)
         {
             try
             {

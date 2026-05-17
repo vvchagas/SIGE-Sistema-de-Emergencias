@@ -49,13 +49,8 @@ namespace SIGEApi.Controllers
         [Authorize]
         [HttpGet("me")]
         public async Task<ActionResult<UserReadDto>> GetUser()
-        {
-            var emailUsuario = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(emailUsuario))
-                return Unauthorized("Token inválido ou sem identificação.");
-            
-            var resultado = await serivce.InfoUser(emailUsuario);
+        {  
+            var resultado = await serivce.InfoUser();
 
             if (resultado == null)
                 return NotFound("Usuário não encontrado no sistema.");

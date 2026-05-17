@@ -1,14 +1,12 @@
-﻿using SIGEApi.DTOs.UserDtos;
-using SIGEApi.Enums;
+﻿using SIGEApi.Enums;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SIGEApi.Models
+namespace SIGEApi.DTOs.ChamadoDtos
 {
-    public class Chamado
+    public class ChamadoAtualizarDto
     {
-        public Guid Id { get; set; }
         [NotNull]
-        public string NomeSolicitante{ get; set; }
+        public string NomeSolicitante { get; set; }
         [NotNull]
         public string TelefoneSolicitante { get; set; }
         [NotNull]
@@ -18,17 +16,7 @@ namespace SIGEApi.Models
         [NotNull]
         public ConscienciaPaciente StatusPaciente { get; set; }
         [NotNull]
-        public StatusChamado StatusChamado { get; set; }
-        [NotNull]
         public PrioridadeChamado NivelPrioridade { get; set; }
-        [NotNull]
-        public DateTime DataAbertura { get; set; }
-        public DateTime DataEncerramento { get; set; }
-        [NotNull]
-        public UserInfoDto User { get; set; }
-        public Ambulancia? Ambulancia { get; set; }
-        [NotNull]
-        public List<Paramedico> Paramedicos { get; set; }
         [NotNull]
         public string Logradouro { get; set; }
         [NotNull]
@@ -37,7 +25,6 @@ namespace SIGEApi.Models
         public string Cidade { get; set; }
         [NotNull]
         public string Bairro { get; set; }
-        public string PontoReferencia { get; set; }
+        public string? PontoReferencia { get; set; }
     }
-    
 }

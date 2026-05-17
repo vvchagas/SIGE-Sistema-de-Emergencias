@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SeuProjeto.Services.Context;
 using SIGEApi.Data;
 using SIGEApi.DTOs.AuthDtos;
+using SIGEApi.DTOs.UserDtos;
 using SIGEApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,13 +20,15 @@ namespace SIGEApi.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly AppDbContext _context;
+        private readonly UserService _userService;
 
-        public AutenticacaoService(UserManager<Usuario> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, AppDbContext context)
+        public AutenticacaoService(UserManager<Usuario> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, AppDbContext context, UserService userService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _context = context;
+            _userService = userService;
         }
 
         public async Task<IdentityResult> Registrar(RegisterRequestDto request)
@@ -122,19 +126,9 @@ namespace SIGEApi.Services
                 Mensagem = resultado.Errors.ToString()!
             };
         }
-        public async Task<UserReadDto?> InfoUser(string emailUsuario)
+        public async Task<UserInfoDto?> InfoUser()
         {
-            var usuario = await _userManager.FindByEmailAsync(emailUsuario);
-            if (usuario is null) { return null; };
-
-            return new UserReadDto
-            {
-                Nome = usuario.Nome,
-                Email = usuario.Email!,
-                Telefone = usuario.PhoneNumber,
-                Cpf = usuario.Cpf,
-                Cargo = usuario.Cargo,
-            };
+            return await _userService.GetAllInfoAsync();
         }
     }
 }

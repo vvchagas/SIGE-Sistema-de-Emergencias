@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using SeuProjeto.Services.Context;
 using SIGEApi.Data;
 using SIGEApi.Models;
 using SIGEApi.Repositories;
 using SIGEApi.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +63,9 @@ builder.Services.AddScoped<AmbulanciaService>();
 builder.Services.AddScoped<AmbulanciaRepository>();
 builder.Services.AddScoped<ParamedicoService>();
 builder.Services.AddScoped<ParamedicoRepository>();
+builder.Services.AddScoped<ChamadoRepository>();
+builder.Services.AddScoped<ChamadoService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
