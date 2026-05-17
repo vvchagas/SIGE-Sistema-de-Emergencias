@@ -1,4 +1,5 @@
-﻿using SIGEApi.DTOs.UserDtos;
+﻿using Microsoft.AspNetCore.SignalR;
+using SIGEApi.DTOs.UserDtos;
 using SIGEApi.Enums;
 using System.Diagnostics.CodeAnalysis;
 
@@ -24,9 +25,11 @@ namespace SIGEApi.Models
         [NotNull]
         public DateTime DataAbertura { get; set; }
         public DateTime DataEncerramento { get; set; }
+        public Usuario User { get; set; } 
         [NotNull]
-        public UserInfoDto User { get; set; }
+        public string UserId { get; set; }
         public Ambulancia? Ambulancia { get; set; }
+        public Guid AmbulanciaId { get; set; }
         [NotNull]
         public List<Paramedico> Paramedicos { get; set; }
         [NotNull]

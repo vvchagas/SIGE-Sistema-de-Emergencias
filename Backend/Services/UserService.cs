@@ -81,6 +81,10 @@ namespace SeuProjeto.Services.Context
         {
             var user = await GetUserAsync();
 
+            if (user == null)
+                return null;
+
+            Console.WriteLine(GetUserId());
             UserInfoDto userInfo = new UserInfoDto()
             {
                 Id = GetUserId(),

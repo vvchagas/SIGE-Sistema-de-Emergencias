@@ -93,11 +93,11 @@ namespace SIGEApi.Controllers
             }
         }
         [HttpPatch("{id}/prioridade")]
-        public async Task<ActionResult<Chamado>> PatchPrioridadeChamado(Guid id, PrioridadeChamado status)
+        public async Task<ActionResult<Chamado>> PatchPrioridadeChamado(Guid id, PrioridadeChamado prioridade)
         {
             try
             {
-                var chamadoAtualizado = await service.AtualizarPrioridadeChamado(id, status);
+                var chamadoAtualizado = await service.AtualizarPrioridadeChamado(id, prioridade);
                 return Ok(chamadoAtualizado);
             }
             catch (Exception ex)

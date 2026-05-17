@@ -35,7 +35,9 @@ namespace SIGEApi.Repositories
         }
         public async Task<Ambulancia?> GetAmbulanciaById(Guid id)
         {
-            return await _context.Ambulancias.FindAsync(id);
+            return await _context.Ambulancias
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == id);
         }
         public async Task<Ambulancia> DeletarAmbulancia(Ambulancia ambulancia)
         {            

@@ -31,6 +31,12 @@ namespace SIGEApi.Repositories
         }
         public async Task<Chamado> SalvarChamado(Chamado chamado)
         {
+            foreach (var paramedico in chamado.Paramedicos)
+            {
+                if (_context.Entry(paramedico).State == EntityState.Detached)
+                    _context.Paramedicos.Attach(paramedico);
+            }
+
             _context.Chamados.Add(chamado);
             await _context.SaveChangesAsync();
             return chamado;

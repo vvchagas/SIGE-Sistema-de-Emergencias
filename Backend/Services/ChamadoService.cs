@@ -40,19 +40,27 @@ namespace SIGEApi.Services
         }
         public async Task<Chamado> CreateChamado(ChamadoRequestDto chamadoRequest)
         {
-            if (chamadoRequest.Numero <= 0) { throw new ArgumentException("Número de casa inválido"); }
+            if (chamadoRequest.Numero <= 0)
+                throw new ArgumentException("Número de casa inválido");
 
             Ambulancia? ambulanciaChamado = await _repositoryAmbulancia.GetAmbulanciaById(chamadoRequest.AmbulanciaId);
 
-            if (ambulanciaChamado == null ) { throw new ArgumentException("Ambulância não encontrada"); }
+            if (ambulanciaChamado == null)
+                throw new ArgumentException("Ambulância não encontrada");
 
             List<Paramedico> paramedicos = new List<Paramedico>();
-            foreach (Guid id in  chamadoRequest.Paramedicos)
+            foreach (Guid id in chamadoRequest.Paramedicos)
             {
-                Paramedico paramedico = await _repositoryParamedico.GetParamedicoById(id);
+                Paramedico? paramedico = await _repositoryParamedico.GetParamedicoById(id);
+                if (paramedico == null)
+                    throw new ArgumentException($"Paramédico com ID {id} não encontrado");
+
                 await _paramedicoService.AtualizarDisponibilidade(id, true);
-                paramedicos.Add(paramedico);
+
+                paramedicos.Add(new Paramedico { Id = id });
             }
+
+            var user = await _userService.GetUserAsync();
 
             Chamado novoChamado = new Chamado()
             {
@@ -63,9 +71,10 @@ namespace SIGEApi.Services
                 StatusPaciente = chamadoRequest.StatusPaciente,
                 StatusChamado = StatusChamado.Aguardando,
                 NivelPrioridade = chamadoRequest.NivelPrioridade,
-                DataAbertura = DateTime.Now,
-                User = await _userService.GetAllInfoAsync(),
-                Ambulancia = ambulanciaChamado,
+                DataAbertura = DateTime.UtcNow,
+                UserId = user.Id,
+                Ambulancia = null,
+                AmbulanciaId = ambulanciaChamado.Id,
                 Paramedicos = paramedicos,
                 Logradouro = chamadoRequest.Logradouro,
                 Numero = chamadoRequest.Numero,

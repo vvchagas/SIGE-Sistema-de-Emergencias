@@ -40,9 +40,11 @@ namespace SIGEApi.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Paramedico> GetParamedicoById(Guid id)
+        public async Task<Paramedico?> GetParamedicoById(Guid id)
         {
-            return await _context.Paramedicos.FindAsync(id);
+            return await _context.Paramedicos
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Paramedico> DeletarParamedico(Paramedico paramedico)
