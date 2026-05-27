@@ -118,12 +118,15 @@ const toggleMode = () => {
                 v-model="form.nascimento"
                 class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all"
               />
-              <input
-                type="text"
-                v-model="form.cargo"
-                placeholder="Cargo (opcional)"
-               class="w-full mt-4 px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400"
-              />
+             
+              <select name="cargo" id="cargo" v-model="form.cargo" class="w-full px-6 py-4 border-2 mt-3 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all duration-300">
+                <option value="Selecione seu cargo">Selecione seu cargo (opcional)</option>
+                <option value="paramedico">Paramédico</option>
+                <option value="medico">Médico</option>
+                <option value="enfermeiro">Enfermeiro</option>
+                <option value="enfermeiro">Recepção</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
             <input
               type="tel"
@@ -190,10 +193,30 @@ const toggleMode = () => {
 <style scoped>
 .login-wrapper {
   background-image: url('@/assets/img/image.png');
-  background-size: 818px;
+  background-size: cover;
   background-position: left;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  width: 100%;
+  height: 100vh;
+}
+/* tela pequena celular tablet */
+@media (min-width: 640px) {
+  .login-wrapper {
+    background-size: 750px;
+  }
+}
+/* tela media responsivo tablets notebooks  */
+@media (min-width: 768px) {
+  .login-wrapper {
+    background-size: 850px;
+  }
+}
+/* tela grande responsivo */
+@media (min-width: 1024px) {
+  .login-wrapper {
+    background-size: 950px;
+  }
 }
 
 .glass-effect {
