@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import api from '@/services/api';
 
 const form = reactive({
   solicitanteNome: '',
@@ -12,6 +13,9 @@ const form = reactive({
   naturezaEmergencia: '',
   descricaoPaciente: ''
 });
+
+const paginaAtual = 1;
+const limitePorPagina = 10;
 
 const router = useRouter();
 const sidebarAberta = ref(false);
@@ -25,6 +29,18 @@ function abrirModalSair() {
 function confirmarSaida() {
   mostrarModalSair.value = false;
   router.push('/login');
+}
+
+function getChamados(){
+    api.get('/chamados', {
+    params: {
+      pagina: paginaAtual,
+      quantidade: limitePorPagina
+    }
+  })
+  .then(res => {
+    console.log(res.data);
+  });
 }
 </script>
 
@@ -187,6 +203,7 @@ function confirmarSaida() {
             <div class="text-right">
               <span class="block text-xs font-bold text-error mb-1">ABERTO</span>
               <button
+                @click="getChamados"
                 class="bg-primary text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-primary-container transition-colors">
                 DESIGNAR
               </button>
