@@ -48,6 +48,8 @@ namespace SIGEApi.Services
             if (ambulanciaChamado == null)
                 throw new ArgumentException("Ambulância não encontrada");
 
+            await _ambulanciaService.AtualizarStatusAmbulancia(ambulanciaChamado.Id, StatusAmbulancia.EmUso);
+
             List<Paramedico> paramedicos = new List<Paramedico>();
             foreach (Guid id in chamadoRequest.Paramedicos)
             {
