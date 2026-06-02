@@ -17,12 +17,18 @@ export interface RegisterRequestDto {
   cpf: string
   nascimento: string
   telefone: string
+  cargo: string
   senha: string
 }
 
 export interface AutenticacaoRespostaDto {
+  sucesso: boolean
+  mensagem: string
   token: string
-  user: UserReadDto
+  nome: string
+  cargo: string
+  roles: string[]
+  erros: string[] | null
 }
 
 export interface UserReadDto {
@@ -30,6 +36,7 @@ export interface UserReadDto {
   nome: string
   email: string
   cpf?: string
+  telefone?: string
   cargo?: string
 }
 
@@ -134,7 +141,12 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`)
+    const mensagem =
+      errorData.mensagem ||
+      errorData.message ||
+      errorData.title ||
+      `Erro ${response.status}: ${response.statusText}`
+    throw new Error(mensagem)
   }
 
   if (response.status === 204) return {} as T

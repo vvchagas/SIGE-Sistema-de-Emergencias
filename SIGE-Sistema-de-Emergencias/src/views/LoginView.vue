@@ -7,6 +7,25 @@ const isLogin = ref(true)
 const router = useRouter()
 const carregando = ref(false)
 const erroLogin = ref<string | null>(null)
+const mostrarSenha = ref(false)
+const mostrarConfirmarSenha = ref(false)
+
+// Aplica máscara DD/MM/AAAA enquanto o usuário digita
+function formatarData(e: Event) {
+  const alvo = e.target as HTMLInputElement
+  let v = alvo.value.replace(/\D/g, '').slice(0, 8)
+  if (v.length >= 5) v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`
+  else if (v.length >= 3) v = `${v.slice(0, 2)}/${v.slice(2)}`
+  form.nascimento = v
+}
+
+// Converte "DD/MM/AAAA" para "AAAA-MM-DD" (formato esperado pelo backend)
+function converterDataParaISO(data: string): string {
+  const partes = data.split('/')
+  if (partes.length !== 3) return data
+  const [dia, mes, ano] = partes
+  return `${ano}-${mes}-${dia}`
+}
 
 const form = reactive({
   nome: '',
@@ -14,6 +33,7 @@ const form = reactive({
   cpf: '',
   nascimento: '',
   telefone: '',
+  cargo: '',
   senha: '',
   confirmarSenha: '',
 })
@@ -36,17 +56,17 @@ const handleSubmit = async () => {
       })
 
       localStorage.setItem('token', resposta.token)
-      localStorage.setItem('usuario_nome', resposta.user.nome)
-      localStorage.setItem('usuario_cargo', resposta.user.cargo ?? '')
-      localStorage.setItem('usuario_id', resposta.user.id)
+      localStorage.setItem('usuario_nome', resposta.nome)
+      localStorage.setItem('usuario_cargo', resposta.cargo ?? '')
       router.push('/dashboard')
     } else {
       await authApi.registrar({
         nome: form.nome,
         email: form.email,
         cpf: form.cpf,
-        nascimento: form.nascimento,
+        nascimento: converterDataParaISO(form.nascimento),
         telefone: form.telefone,
+        cargo: form.cargo,
         senha: form.senha,
       })
 
@@ -57,9 +77,8 @@ const handleSubmit = async () => {
       })
 
       localStorage.setItem('token', resposta.token)
-      localStorage.setItem('usuario_nome', resposta.user.nome)
-      localStorage.setItem('usuario_cargo', resposta.user.cargo ?? '')
-      localStorage.setItem('usuario_id', resposta.user.id)
+      localStorage.setItem('usuario_nome', resposta.nome)
+      localStorage.setItem('usuario_cargo', resposta.cargo ?? '')
       router.push('/dashboard')
     }
   } catch (e: unknown) {
@@ -114,17 +133,21 @@ const toggleMode = () => {
             <div class="px-1">
               <label class="text-xs text-gray-500 block mb-1 ml-2">Data de Nascimento</label>
               <input
-                type="date"
-                v-model="form.nascimento"
-                class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all"
+                type="text"
+                inputmode="numeric"
+                :value="form.nascimento"
+                @input="formatarData"
+                placeholder="DD/MM/AAAA"
+                maxlength="10"
+                class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400"
               />
              
-              <select name="cargo" id="cargo" v-model="form.cargo" class="w-full px-6 py-4 border-2 mt-3 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all duration-300">
-                <option value="Selecione seu cargo">Selecione seu cargo (opcional)</option>
+              <select name="cargo" id="cargo" v-model="form.cargo" required class="w-full px-6 py-4 border-2 mt-3 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all duration-300">
+                <option value="" disabled>Selecione seu cargo</option>
                 <option value="paramedico">Paramédico</option>
                 <option value="medico">Médico</option>
                 <option value="enfermeiro">Enfermeiro</option>
-                <option value="enfermeiro">Recepção</option>
+                <option value="recepcao">Recepção</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
@@ -147,24 +170,40 @@ const toggleMode = () => {
           />
         </div>
 
-        <div>
+        <div class="relative">
           <input
-            type="password"
+            :type="mostrarSenha ? 'text' : 'password'"
             v-model="form.senha"
             placeholder="Senha"
-            class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400"
+            class="w-full px-6 py-4 pr-14 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400"
             required
           />
+          <button
+            type="button"
+            @click="mostrarSenha = !mostrarSenha"
+            class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#2027a8] transition-colors"
+            :aria-label="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+          >
+            <span class="material-symbols-outlined">{{ mostrarSenha ? 'visibility_off' : 'visibility' }}</span>
+          </button>
         </div>
 
-        <div v-if="!isLogin">
+        <div v-if="!isLogin" class="relative">
           <input
-            type="password"
+            :type="mostrarConfirmarSenha ? 'text' : 'password'"
             v-model="form.confirmarSenha"
             placeholder="Confirmar Senha"
-            class="w-full px-6 py-4 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400"
+            class="w-full px-6 py-4 pr-14 border-2 border-gray-100 rounded-2xl text-base outline-none focus:border-[#2027a8] focus:ring-4 focus:ring-blue-50 transition-all placeholder:text-gray-400"
             required
           />
+          <button
+            type="button"
+            @click="mostrarConfirmarSenha = !mostrarConfirmarSenha"
+            class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#2027a8] transition-colors"
+            :aria-label="mostrarConfirmarSenha ? 'Ocultar senha' : 'Mostrar senha'"
+          >
+            <span class="material-symbols-outlined">{{ mostrarConfirmarSenha ? 'visibility_off' : 'visibility' }}</span>
+          </button>
         </div>
 
         <button

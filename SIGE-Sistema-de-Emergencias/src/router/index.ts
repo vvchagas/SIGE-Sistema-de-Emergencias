@@ -7,6 +7,7 @@ import EquipeView from '../views/EquipeView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import VeiculosView from '../views/VeiculosView.vue'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -24,37 +25,37 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: DashboardView,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
     {
       path: '/chamado',
       name: 'chamado',
       component: ChamadoView,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
     {
       path: '/perfil',
       name: 'perfil',
       component: PerfilView,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
     {
       path: '/equipe',
       name: 'equipe',
       component: EquipeView,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
     {
       path: '/veiculos',
       name: 'veiculos',
       component: VeiculosView,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
     {
       path: '/settings',
       name: 'settings',
       component: SettingsView,
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
   ],
 })

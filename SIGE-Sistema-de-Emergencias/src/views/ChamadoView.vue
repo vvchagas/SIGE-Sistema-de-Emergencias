@@ -89,6 +89,14 @@ async function despacharChamado() {
       ...form,
       numero: parseInt(String(form.numero)) || 0,
     })
+
+    // Marca a ambulância despachada como "Em Ocorrência" (status 2)
+    try {
+      await ambulanciasApi.atualizar(form.ambulanciaId, { status: 2 })
+    } catch {
+      // Chamado já foi criado; falha ao atualizar o status não bloqueia o despacho
+    }
+
     router.push('/dashboard')
   } catch (e: unknown) {
     erro.value = e instanceof Error ? e.message : 'Erro ao criar chamado.'
