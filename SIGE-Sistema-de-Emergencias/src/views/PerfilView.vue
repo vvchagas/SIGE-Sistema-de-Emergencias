@@ -27,10 +27,12 @@ function confirmarSaida() {
 }
 
 const iniciais = computed(() => {
-  if (!usuario.value?.nome) return '?'
-  const partes = usuario.value.nome.trim().split(/\s+/)
-  if (partes.length === 1) return partes[0][0].toUpperCase()
-  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+  const nome = usuario.value?.nome?.trim()
+  if (!nome) return '?'
+  const partes = nome.split(/\s+/)
+  const primeira = partes[0]?.[0] ?? ''
+  const ultima = partes.length > 1 ? (partes[partes.length - 1]?.[0] ?? '') : ''
+  return (primeira + ultima).toUpperCase() || '?'
 })
 
 async function carregarPerfil() {
@@ -123,7 +125,7 @@ onMounted(carregarPerfil)
 
     <!-- Header -->
     <header
-      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-40 border-b border-slate-100 dark:border-slate-800"
+      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white dark:bg-slate-950 z-40 border-b border-slate-100 dark:border-slate-800"
     >
       <div class="flex items-center gap-3">
         <button
@@ -146,7 +148,7 @@ onMounted(carregarPerfil)
     </header>
 
     <!-- Conteúdo -->
-    <main class="lg:ml-64 p-6 lg:p-8 pt-28 min-h-screen bg-slate-50">
+    <main class="lg:ml-64 p-6 lg:p-8 pt-32 lg:pt-36 min-h-screen bg-slate-50">
 
       <!-- Erro -->
       <div
@@ -192,9 +194,9 @@ onMounted(carregarPerfil)
           >
             <span class="text-3xl font-extrabold text-white">{{ iniciais }}</span>
           </div>
-          <div class="text-center sm:text-left">
-            <h2 class="text-2xl font-extrabold text-slate-800">{{ usuario.nome }}</h2>
-            <p class="text-slate-500 mt-1">{{ usuario.email }}</p>
+          <div class="text-center sm:text-left min-w-0 flex-1">
+            <h2 class="text-2xl font-extrabold text-slate-800 break-words">{{ usuario.nome }}</h2>
+            <p class="text-slate-500 mt-1 break-words">{{ usuario.email }}</p>
             <span
               v-if="usuario.cargo"
               class="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full uppercase tracking-wide"

@@ -48,8 +48,6 @@ namespace SIGEApi.Services
             if (ambulanciaChamado == null)
                 throw new ArgumentException("Ambulância não encontrada");
 
-            await _ambulanciaService.AtualizarStatusAmbulancia(ambulanciaChamado.Id, StatusAmbulancia.EmUso);
-
             List<Paramedico> paramedicos = new List<Paramedico>();
             foreach (Guid id in chamadoRequest.Paramedicos)
             {
@@ -57,9 +55,8 @@ namespace SIGEApi.Services
                 if (paramedico == null)
                     throw new ArgumentException($"Paramédico com ID {id} não encontrado");
 
-                await _paramedicoService.AtualizarDisponibilidade(id, true);
-
-                paramedicos.Add(new Paramedico { Id = id });
+                var rastreado = await _paramedicoService.AtualizarDisponibilidade(id, true);
+                paramedicos.Add(rastreado);
             }
 
             var user = await _userService.GetUserAsync();
@@ -117,7 +114,8 @@ namespace SIGEApi.Services
             if (chamado == null) { throw new ArgumentException("Chamado não encontrado!"); }
             if (chamado.StatusChamado != StatusChamado.Aguardando) { throw new ArgumentException("Chamado não está pendente!"); }
 
-            chamado.Ambulancia = ambulancia;
+            chamado.AmbulanciaId = idAmbulancia;
+            chamado.StatusChamado = StatusChamado.EmAndamento;
             await _ambulanciaService.AtualizarStatusAmbulancia(idAmbulancia, StatusAmbulancia.EmUso);
             Chamado chamadoAtualizado = await _repositoryChamado.AtualizarChamado(chamado);
 
@@ -132,11 +130,11 @@ namespace SIGEApi.Services
             chamado.StatusChamado = StatusChamado.Finalizado;
             chamado.DataEncerramento = DateTime.Now;
 
-            await _ambulanciaService.AtualizarStatusAmbulancia(chamado.Ambulancia.Id, StatusAmbulancia.Disponivel);
+            await _ambulanciaService.AtualizarStatusAmbulancia(chamado.AmbulanciaId, StatusAmbulancia.Disponivel);
 
             foreach (Paramedico paramedico in chamado.Paramedicos)
             {
-                await _paramedicoService.AtualizarDisponibilidade(paramedico.Id, false);  
+                paramedico.Ocupado = false;
             }
             Chamado chamadoAtualizado = await _repositoryChamado.AtualizarChamado(chamado);
             return chamadoAtualizado;

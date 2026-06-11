@@ -8,6 +8,7 @@
         public bool IsAuthenticated { get; set; }
         public string Roles { get; set; }
         public string Cpf {  get; set; }
+        public string Telefone { get; set; }
         public string Cargo { get; set; }
         public DateTime DataCriacao { get; set; }
     }

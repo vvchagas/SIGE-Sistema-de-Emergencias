@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { chamadosApi, ambulanciasApi, type AmbulanciaGetDTO, type ChamadoRequestDto } from '../api/index'
+import {
+  chamadosApi,
+  ambulanciasApi,
+  paramedicosApi,
+  type AmbulanciaGetDTO,
+  type ParamedicoGetDTO,
+  type ChamadoRequestDto,
+} from '../api/index'
 
 const usuarioNome = localStorage.getItem('usuario_nome') || 'Usuário'
 
@@ -28,6 +35,59 @@ const enviando = ref(false)
 const erro = ref<string | null>(null)
 const ambulancias = ref<AmbulanciaGetDTO[]>([])
 const carregandoAmbulancias = ref(true)
+const paramedicos = ref<ParamedicoGetDTO[]>([])
+const carregandoParamedicos = ref(true)
+
+function classificarTipo(tipoStr?: string): 'A' | 'D' | null {
+  const t = (tipoStr || '').toLowerCase()
+  if (t.includes('tipo d') || t.includes('uti') || t.includes('avançado') || t.includes('avancado'))
+    return 'D'
+  if (t.includes('tipo a') || t.includes('transporte') || t.includes('básico') || t.includes('basico'))
+    return 'A'
+  return null
+}
+
+const ambulanciasDisponiveis = computed(() => ambulancias.value.filter((a) => a.status === 0))
+
+const ambulanciaSelecionada = computed(() =>
+  ambulancias.value.find((a) => a.id === form.ambulanciaId),
+)
+const tipoSelecionado = computed(() => classificarTipo(ambulanciaSelecionada.value?.tipo))
+
+function toggleParamedico(id: string) {
+  const i = form.paramedicos.indexOf(id)
+  if (i >= 0) form.paramedicos.splice(i, 1)
+  else form.paramedicos.push(id)
+}
+
+const avaliacaoTripulacao = computed(() => {
+  const tipo = tipoSelecionado.value
+  if (!tipo) return null
+  const sel = paramedicos.value.filter((p) => form.paramedicos.includes(p.id))
+  const temCondutor = sel.some((p) => p.cargo === 'condutor')
+  const temTecnico = sel.some((p) => p.cargo === 'enfermeiro' || p.cargo === 'paramedico')
+  const temMedico = sel.some((p) => p.cargo === 'medico')
+  const faltando: string[] = []
+  if (!temCondutor) faltando.push('Condutor')
+  if (!temTecnico) faltando.push('Enfermeiro ou Paramédico')
+  if (tipo === 'D' && !temMedico) faltando.push('Médico')
+  const requisito =
+    tipo === 'D'
+      ? 'Tipo D exige: Condutor + (Enfermeiro ou Paramédico) + Médico — mín. 3'
+      : 'Tipo A exige: Condutor + (Enfermeiro ou Paramédico) — mín. 2'
+  return { tipo, requisito, faltando, ok: faltando.length === 0 }
+})
+
+async function carregarParamedicos() {
+  carregandoParamedicos.value = true
+  try {
+    paramedicos.value = await paramedicosApi.listar()
+  } catch {
+    paramedicos.value = []
+  } finally {
+    carregandoParamedicos.value = false
+  }
+}
 
 function abrirModalSair() {
   sidebarAberta.value = false
@@ -90,13 +150,6 @@ async function despacharChamado() {
       numero: parseInt(String(form.numero)) || 0,
     })
 
-    // Marca a ambulância despachada como "Em Ocorrência" (status 2)
-    try {
-      await ambulanciasApi.atualizar(form.ambulanciaId, { status: 2 })
-    } catch {
-      // Chamado já foi criado; falha ao atualizar o status não bloqueia o despacho
-    }
-
     router.push('/dashboard')
   } catch (e: unknown) {
     erro.value = e instanceof Error ? e.message : 'Erro ao criar chamado.'
@@ -105,7 +158,10 @@ async function despacharChamado() {
   }
 }
 
-onMounted(carregarAmbulancias)
+onMounted(() => {
+  carregarAmbulancias()
+  carregarParamedicos()
+})
 </script>
 
 <template>
@@ -443,16 +499,74 @@ onMounted(carregarAmbulancias)
                   <option value="" disabled selected>
                     {{ carregandoAmbulancias ? 'Carregando...' : 'Selecione a ambulância' }}
                   </option>
-                  <option v-for="amb in ambulancias" :key="amb.id" :value="amb.id">
+                  <option v-for="amb in ambulanciasDisponiveis" :key="amb.id" :value="amb.id">
                     {{ amb.placa }} — {{ amb.marca }} {{ amb.modelo }} ({{ amb.tipo }})
                   </option>
                 </select>
                 <p
-                  v-if="!carregandoAmbulancias && ambulancias.length === 0"
+                  v-if="!carregandoAmbulancias && ambulanciasDisponiveis.length === 0"
                   class="text-xs text-red-500"
                 >
                   Nenhuma ambulância disponível.
                 </p>
+              </div>
+
+              <div v-if="form.ambulanciaId" class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wide"
+                  >Profissionais a bordo</label
+                >
+                <p v-if="avaliacaoTripulacao" class="text-[11px] text-slate-500">
+                  {{ avaliacaoTripulacao.requisito }}
+                </p>
+
+                <div v-if="carregandoParamedicos" class="text-xs text-slate-400">
+                  Carregando profissionais...
+                </div>
+                <div v-else-if="paramedicos.length === 0" class="text-xs text-red-500">
+                  Nenhum profissional cadastrado.
+                </div>
+
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    v-for="p in paramedicos"
+                    :key="p.id"
+                    type="button"
+                    @click="toggleParamedico(p.id)"
+                    :class="[
+                      'flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-colors',
+                      form.paramedicos.includes(p.id)
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-900'
+                        : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300',
+                    ]"
+                  >
+                    <span class="material-symbols-outlined text-base">
+                      {{ form.paramedicos.includes(p.id) ? 'check_circle' : 'radio_button_unchecked' }}
+                    </span>
+                    <span class="flex-1 min-w-0">
+                      <span class="block text-sm font-semibold truncate">{{ p.name }}</span>
+                      <span class="block text-[11px] opacity-70 capitalize">{{ p.cargo }}</span>
+                    </span>
+                  </button>
+                </div>
+
+                <div
+                  v-if="avaliacaoTripulacao && !avaliacaoTripulacao.ok"
+                  class="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
+                >
+                  <span class="material-symbols-outlined text-base">warning</span>
+                  <span
+                    >Tripulação incompleta para
+                    {{ avaliacaoTripulacao.tipo === 'D' ? 'Tipo D' : 'Tipo A' }}. Faltando:
+                    {{ avaliacaoTripulacao.faltando.join(', ') }}.</span
+                  >
+                </div>
+                <div
+                  v-else-if="avaliacaoTripulacao && avaliacaoTripulacao.ok"
+                  class="flex items-center gap-2 text-xs text-emerald-700"
+                >
+                  <span class="material-symbols-outlined text-base">check_circle</span>
+                  Tripulação adequada para o tipo da ambulância.
+                </div>
               </div>
 
               <button

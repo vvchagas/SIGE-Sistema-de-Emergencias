@@ -88,11 +88,12 @@ namespace SeuProjeto.Services.Context
             UserInfoDto userInfo = new UserInfoDto()
             {
                 Id = GetUserId(),
-                Nome = GetUserName(),
+                Nome = user?.Nome,
                 Email = GetEmail(),
                 IsAuthenticated = IsAuthenticated(),
                 Roles = GetRole(),
                 Cpf = user?.Cpf,
+                Telefone = user?.PhoneNumber,
                 Cargo = user?.Cargo,
                 DataCriacao = user.DataCriacao
             };

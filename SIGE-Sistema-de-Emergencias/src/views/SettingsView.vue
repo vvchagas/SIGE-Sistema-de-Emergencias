@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import {
   paramedicosApi,
   ambulanciasApi,
@@ -11,10 +11,11 @@ import {
 const sidebarAberta = ref(false)
 const mostrarModalSair = ref(false)
 const router = useRouter()
+const route = useRoute()
 const usuarioNome = ref(localStorage.getItem('usuario_nome') || 'Usuário')
 
 type Aba = 'paramedicos' | 'ambulancias'
-const abaAtiva = ref<Aba>('paramedicos')
+const abaAtiva = ref<Aba>(route.query.aba === 'ambulancias' ? 'ambulancias' : 'paramedicos')
 
 // ---- Toast de sucesso ----
 const toast = ref<string | null>(null)
@@ -48,10 +49,6 @@ const cargoConfig: Record<string, { label: string; badgeClass: string }> = {
 
 function cargoDe(cargo: string) {
   return cargoConfig[cargo] ?? { label: cargo || 'Não definido', badgeClass: 'bg-slate-100 text-slate-600' }
-}
-
-function nomeDe(p: ParamedicoGetDTO) {
-  return p.nome ?? (p as { name?: string }).name ?? ''
 }
 
 function iniciaisDe(nome: string | undefined | null) {
@@ -127,7 +124,7 @@ const erroAmb = ref<string | null>(null)
 const salvandoAmb = ref(false)
 const erroSalvarAmb = ref<string | null>(null)
 
-const novaAmbulancia = ref({ placa: '', marca: '', modelo: '' })
+const novaAmbulancia = ref({ placa: '', marca: '', modelo: '', tipo: '' })
 
 // Edição de status inline
 const editandoStatusId = ref<string | null>(null)
@@ -156,7 +153,7 @@ function cancelarEdicaoStatus() {
 async function salvarStatus(id: string) {
   salvandoStatus.value = true
   try {
-    await ambulanciasApi.atualizar(id, { status: statusEmEdicao.value })
+    await ambulanciasApi.atualizarStatus(id, statusEmEdicao.value)
     await carregarAmbulancias()
     editandoStatusId.value = null
     mostrarToast('Status atualizado!')
@@ -187,10 +184,10 @@ async function salvarAmbulancia() {
       placa: novaAmbulancia.value.placa,
       marca: novaAmbulancia.value.marca,
       modelo: novaAmbulancia.value.modelo,
-      tipo: '',
+      tipo: novaAmbulancia.value.tipo,
     })
     await carregarAmbulancias()
-    novaAmbulancia.value = { placa: '', marca: '', modelo: '' }
+    novaAmbulancia.value = { placa: '', marca: '', modelo: '', tipo: '' }
     mostrarToast('Ambulância cadastrada com sucesso!')
   } catch (e: unknown) {
     erroSalvarAmb.value = e instanceof Error ? e.message : 'Erro ao cadastrar ambulância'
@@ -317,7 +314,7 @@ onMounted(() => {
 
     <!-- Header -->
     <header
-      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-40 border-b border-slate-100 dark:border-slate-800"
+      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white dark:bg-slate-950 z-40 border-b border-slate-100 dark:border-slate-800"
     >
       <div class="flex items-center gap-3">
         <button
@@ -340,7 +337,7 @@ onMounted(() => {
     </header>
 
     <!-- Conteúdo -->
-    <main class="lg:ml-64 p-6 lg:p-8 pt-28">
+    <main class="lg:ml-64 p-6 lg:p-8 pt-32 lg:pt-36">
       <!-- Toast -->
       <Transition name="fade">
         <div
@@ -352,41 +349,45 @@ onMounted(() => {
         </div>
       </Transition>
 
-      <!-- Seletor de abas -->
-      <div class="flex gap-8 mb-8 border-b border-slate-200">
-        <button
-          @click="trocarAba('ambulancias')"
-          :class="[
-            'relative pb-3 text-lg font-bold transition-colors flex items-center gap-2',
-            abaAtiva === 'ambulancias' ? 'text-blue-900' : 'text-slate-400 hover:text-slate-600',
-          ]"
-        >
-          Ambulâncias
-          <span
-            class="text-xs font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500"
-            >{{ totalAmb }}</span
-          >
-          <span
-            v-if="abaAtiva === 'ambulancias'"
-            class="absolute -bottom-px left-0 right-0 h-0.5 bg-blue-900 rounded-full"
-          ></span>
-        </button>
+      <!-- Seletor de abas (segmented control) -->
+      <div class="inline-flex w-full sm:w-auto bg-white rounded-2xl shadow-sm p-1.5 mb-8 gap-1.5">
         <button
           @click="trocarAba('paramedicos')"
           :class="[
-            'relative pb-3 text-lg font-bold transition-colors flex items-center gap-2',
-            abaAtiva === 'paramedicos' ? 'text-blue-900' : 'text-slate-400 hover:text-slate-600',
+            'flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all',
+            abaAtiva === 'paramedicos'
+              ? 'bg-blue-900 text-white shadow'
+              : 'text-slate-500 hover:text-blue-900 hover:bg-slate-50',
           ]"
         >
+          <span class="material-symbols-outlined text-xl">medical_services</span>
           Paramédicos
           <span
-            class="text-xs font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500"
+            :class="[
+              'text-xs font-bold px-1.5 py-0.5 rounded-full',
+              abaAtiva === 'paramedicos' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500',
+            ]"
             >{{ totalParam }}</span
           >
+        </button>
+        <button
+          @click="trocarAba('ambulancias')"
+          :class="[
+            'flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all',
+            abaAtiva === 'ambulancias'
+              ? 'bg-blue-900 text-white shadow'
+              : 'text-slate-500 hover:text-blue-900 hover:bg-slate-50',
+          ]"
+        >
+          <span class="material-symbols-outlined text-xl">ambulance</span>
+          Ambulâncias
           <span
-            v-if="abaAtiva === 'paramedicos'"
-            class="absolute -bottom-px left-0 right-0 h-0.5 bg-blue-900 rounded-full"
-          ></span>
+            :class="[
+              'text-xs font-bold px-1.5 py-0.5 rounded-full',
+              abaAtiva === 'ambulancias' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500',
+            ]"
+            >{{ totalAmb }}</span
+          >
         </button>
       </div>
 
@@ -549,10 +550,10 @@ onMounted(() => {
                 <div
                   class="w-11 h-11 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold text-sm shrink-0"
                 >
-                  {{ iniciaisDe(p.nome) }}
+                  {{ iniciaisDe(p.name) }}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-slate-800 truncate">{{ p.nome }}</p>
+                  <p class="font-semibold text-slate-800 truncate">{{ p.name }}</p>
                   <p class="text-xs text-slate-400">ID-{{ idCurto(p.id) }}</p>
                 </div>
                 <span
@@ -643,6 +644,18 @@ onMounted(() => {
                   placeholder="Ex: Sprinter 415 CDI"
                   class="bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
                 />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Tipo de Ambulância *</label>
+                <select
+                  v-model="novaAmbulancia.tipo"
+                  required
+                  class="bg-slate-50 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-200 outline-none cursor-pointer"
+                >
+                  <option value="" disabled>Selecione...</option>
+                  <option value="Tipo A">Tipo A — Transporte (Condutor + Téc./Enf.)</option>
+                  <option value="Tipo D">Tipo D — Suporte Avançado/UTI (Condutor + Téc./Enf. + Médico)</option>
+                </select>
               </div>
 
               <button

@@ -11,12 +11,7 @@ const usuarioNome = ref(localStorage.getItem('usuario_nome') || 'Usuário')
 const ambulancias = ref<AmbulanciaGetDTO[]>([])
 const carregando = ref(true)
 const erro = ref<string | null>(null)
-const mostrandoFormulario = ref(false)
 const filtroPainel = ref<'todos' | 'disponiveis' | 'ocorrencia' | 'manutencao'>('todos')
-
-const novaAmbulancia = ref({ placa: '', marca: '', modelo: '', tipo: '' })
-const salvando = ref(false)
-const erroSalvar = ref<string | null>(null)
 
 type StatusKey = 0 | 1 | 2
 
@@ -96,26 +91,6 @@ async function carregarVeiculos() {
     erro.value = e instanceof Error ? e.message : 'Erro ao carregar veículos'
   } finally {
     carregando.value = false
-  }
-}
-
-async function salvarAmbulancia() {
-  salvando.value = true
-  erroSalvar.value = null
-  try {
-    await ambulanciasApi.criar({
-      placa: novaAmbulancia.value.placa,
-      marca: novaAmbulancia.value.marca,
-      modelo: novaAmbulancia.value.modelo,
-      tipo: novaAmbulancia.value.tipo,
-    })
-    await carregarVeiculos()
-    mostrandoFormulario.value = false
-    novaAmbulancia.value = { placa: '', marca: '', modelo: '', tipo: '' }
-  } catch (e: unknown) {
-    erroSalvar.value = e instanceof Error ? e.message : 'Erro ao salvar ambulância'
-  } finally {
-    salvando.value = false
   }
 }
 
@@ -207,7 +182,7 @@ onMounted(carregarVeiculos)
 
     <!-- Header -->
     <header
-      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-40 border-b border-slate-100 dark:border-slate-800"
+      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white dark:bg-slate-950 z-40 border-b border-slate-100 dark:border-slate-800"
     >
       <div class="flex items-center gap-3">
         <button
@@ -230,7 +205,7 @@ onMounted(carregarVeiculos)
     </header>
 
     <!-- Conteúdo principal -->
-    <main class="lg:ml-64 p-6 lg:p-8 pt-28">
+    <main class="lg:ml-64 p-6 lg:p-8 pt-32 lg:pt-36">
 
       <!-- Abas de filtro -->
       <div class="flex flex-wrap gap-2 mb-8 bg-white rounded-2xl p-2 shadow-sm w-fit">
@@ -329,75 +304,12 @@ onMounted(carregarVeiculos)
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-bold text-slate-800">Lista de Ambulâncias</h2>
         <button
-          @click="mostrandoFormulario = !mostrandoFormulario"
+          @click="router.push({ path: '/settings', query: { aba: 'ambulancias' } })"
           class="px-4 py-2 bg-blue-900 text-white rounded-full text-sm font-bold hover:bg-blue-800 transition-colors flex items-center gap-2"
         >
-          <span class="material-symbols-outlined text-sm">{{ mostrandoFormulario ? 'close' : 'add' }}</span>
-          {{ mostrandoFormulario ? 'Fechar' : 'Nova Ambulância' }}
+          <span class="material-symbols-outlined text-sm">add</span>
+          Nova Ambulância
         </button>
-      </div>
-
-      <!-- Formulário de cadastro -->
-      <div v-if="mostrandoFormulario" class="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h3 class="font-bold text-indigo-950 mb-4">Cadastrar Nova Ambulância</h3>
-        <div v-if="erroSalvar" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-          ⚠️ {{ erroSalvar }}
-        </div>
-        <form @submit.prevent="salvarAmbulancia" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Placa *</label>
-            <input
-              type="text"
-              v-model="novaAmbulancia.placa"
-              required
-              placeholder="ABC-1234"
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none uppercase"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Marca *</label>
-            <input
-              type="text"
-              v-model="novaAmbulancia.marca"
-              required
-              placeholder="Ex: Mercedes-Benz"
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Modelo *</label>
-            <input
-              type="text"
-              v-model="novaAmbulancia.modelo"
-              required
-              placeholder="Ex: Sprinter 415 CDI"
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Tipo *</label>
-            <select
-              v-model="novaAmbulancia.tipo"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none cursor-pointer"
-            >
-              <option value="" disabled>Selecione...</option>
-              <option value="suporte_basico">Suporte Básico</option>
-              <option value="suporte_avancado">Suporte Avançado</option>
-              <option value="uti_movel">UTI Móvel</option>
-            </select>
-          </div>
-          <div class="md:col-span-2 lg:col-span-4 flex gap-3 mt-2">
-            <button
-              type="submit"
-              :disabled="salvando"
-              class="px-6 py-2 bg-blue-900 text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition-colors disabled:opacity-60 flex items-center gap-2"
-            >
-              <span v-if="salvando" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              {{ salvando ? 'Salvando...' : 'Salvar Ambulância' }}
-            </button>
-          </div>
-        </form>
       </div>
 
       <!-- Erro ao carregar -->

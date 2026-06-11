@@ -16,6 +16,7 @@ namespace SIGEApi.Repositories
         public async Task<List<Chamado>> ListarChamados(int pular, int pegar)
         {
             return await _context.Chamados
+                  .Include(c => c.Paramedicos)
                   .OrderBy(c => !(c.StatusChamado == StatusChamado.Aguardando))
                   .ThenBy(c => !(c.StatusChamado == StatusChamado.EmAndamento))
                   .ThenBy(c => !(c.NivelPrioridade == PrioridadeChamado.Nivel3_Emergencia))
@@ -27,7 +28,9 @@ namespace SIGEApi.Repositories
         }
         public async Task<Chamado> BuscarChamadoById(Guid id)
         {
-            return await _context.Chamados.FindAsync(id);
+            return await _context.Chamados
+                .Include(c => c.Paramedicos)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
         public async Task<Chamado> SalvarChamado(Chamado chamado)
         {
