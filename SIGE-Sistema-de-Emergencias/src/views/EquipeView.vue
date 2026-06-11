@@ -9,21 +9,8 @@ const carregando = ref(true)
 const erro = ref<string | null>(null)
 const sidebarAberta = ref(false)
 const mostrarModalSair = ref(false)
-const mostrandoFormulario = ref(false)
 
 const router = useRouter()
-
-// Formulário
-const novoParamedico = ref({
-  nome: '',
-  cpf: '',
-  telefone: '',
-  email: '',
-  identificadorProfissional: '',
-  cargo: '',
-})
-const salvando = ref(false)
-const erroSalvar = ref<string | null>(null)
 
 const totalParamedicos = computed(() => paramedicos.value.length)
 const disponiveis = computed(() => paramedicos.value.filter(p => !p.ocupado).length)
@@ -52,36 +39,6 @@ async function carregarEquipe() {
     erro.value = e instanceof Error ? e.message : 'Erro ao carregar equipe'
   } finally {
     carregando.value = false
-  }
-}
-
-async function salvarParamedico() {
-  salvando.value = true
-  erroSalvar.value = null
-  try {
-    await paramedicosApi.criar({
-      name: novoParamedico.value.nome,
-      cpf: novoParamedico.value.cpf,
-      telefone: novoParamedico.value.telefone,
-      email: novoParamedico.value.email,
-      identificadorProfissional: novoParamedico.value.identificadorProfissional,
-      cargo: novoParamedico.value.cargo,
-      ocupado: false,
-    })
-    await carregarEquipe()
-    mostrandoFormulario.value = false
-    novoParamedico.value = {
-      nome: '',
-      cpf: '',
-      telefone: '',
-      email: '',
-      identificadorProfissional: '',
-      cargo: '',
-    }
-  } catch (e: unknown) {
-    erroSalvar.value = e instanceof Error ? e.message : 'Erro ao salvar paramédico'
-  } finally {
-    salvando.value = false
   }
 }
 
@@ -174,7 +131,7 @@ onMounted(carregarEquipe)
     </aside>
 
     <header
-      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-40 border-b border-slate-100 dark:border-slate-800"
+      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white dark:bg-slate-950 z-40 border-b border-slate-100 dark:border-slate-800"
     >
       <div class="flex items-center gap-3">
         <button
@@ -207,7 +164,7 @@ onMounted(carregarEquipe)
     </header>
 
     <!-- CONTENT -->
-    <main class="flex-1 lg:ml-64 p-8 overflow-y-auto pt-24">
+    <main class="flex-1 lg:ml-64 p-8 overflow-y-auto pt-32 lg:pt-36">
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-blue-500">
@@ -228,94 +185,12 @@ onMounted(carregarEquipe)
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-bold text-slate-800">Lista de Paramédicos</h2>
         <button
-          @click="mostrandoFormulario = !mostrandoFormulario"
+          @click="router.push('/settings')"
           class="px-4 py-2 bg-blue-900 text-white rounded-full text-sm font-bold hover:bg-blue-800 transition-colors flex items-center gap-2"
         >
-          <span class="material-symbols-outlined text-sm">{{ mostrandoFormulario ? 'close' : 'add' }}</span>
-          {{ mostrandoFormulario ? 'Fechar' : 'Novo Paramédico' }}
+          <span class="material-symbols-outlined text-sm">add</span>
+          Novo Paramédico
         </button>
-      </div>
-
-      <!-- Formulário -->
-      <div v-if="mostrandoFormulario" class="bg-white rounded-xl p-6 shadow-sm mb-6">
-        <h3 class="font-bold text-indigo-950 mb-4">Cadastrar Novo Paramédico</h3>
-
-        <div v-if="erroSalvar" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-          ⚠️ {{ erroSalvar }}
-        </div>
-
-        <form @submit.prevent="salvarParamedico" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Nome *</label>
-            <input
-              type="text"
-              v-model="novoParamedico.nome"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-              placeholder="Nome completo"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">CPF *</label>
-            <input
-              type="text"
-              v-model="novoParamedico.cpf"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-              placeholder="Somente números"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Telefone *</label>
-            <input
-              type="text"
-              v-model="novoParamedico.telefone"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Email *</label>
-            <input
-              type="email"
-              v-model="novoParamedico.email"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-              placeholder="email@exemplo.com"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Identificador Profissional *</label>
-            <input
-              type="text"
-              v-model="novoParamedico.identificadorProfissional"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-              placeholder="CRM/COREN etc"
-            />
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-xs font-bold text-slate-500 uppercase">Cargo *</label>
-            <input
-              type="text"
-              v-model="novoParamedico.cargo"
-              required
-              class="bg-slate-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 outline-none"
-              placeholder="Ex: Técnico de Enfermagem"
-            />
-          </div>
-          <div class="md:col-span-2 lg:col-span-3 flex gap-3 mt-2">
-            <button
-              type="submit"
-              :disabled="salvando"
-              class="px-6 py-2 bg-blue-900 text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition-colors disabled:opacity-60 flex items-center gap-2"
-            >
-              <span v-if="salvando" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              {{ salvando ? 'Salvando...' : 'Salvar Paramédico' }}
-            </button>
-          </div>
-        </form>
       </div>
 
       <!-- Erro -->
@@ -361,7 +236,7 @@ onMounted(carregarEquipe)
             >person</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="font-bold text-slate-800">{{ paramedico.nome }}</p>
+            <p class="font-bold text-slate-800">{{ paramedico.name }}</p>
             <p class="text-sm text-slate-500">{{ paramedico.cargo }} - {{ paramedico.identificadorProfissional }}</p>
             <p class="text-xs text-slate-400">{{ paramedico.email }}</p>
           </div>

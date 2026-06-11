@@ -17,12 +17,18 @@ export interface RegisterRequestDto {
   cpf: string
   nascimento: string
   telefone: string
+  cargo: string
   senha: string
 }
 
 export interface AutenticacaoRespostaDto {
+  sucesso: boolean
+  mensagem: string
   token: string
-  user: UserReadDto
+  nome: string
+  cargo: string
+  roles: string[]
+  erros: string[] | null
 }
 
 export interface UserReadDto {
@@ -30,6 +36,7 @@ export interface UserReadDto {
   nome: string
   email: string
   cpf?: string
+  telefone?: string
   cargo?: string
 }
 
@@ -62,13 +69,13 @@ export interface ChamadoGetDto {
   telefoneSolicitante: string
   tipoEmergencia: string
   descricao: string
-  status: number
+  statusChamado: number
   nivelPrioridade: number
   statusPaciente: number
-  criadoEm: string
-  atualizadoEm?: string
+  dataAbertura: string
+  dataEncerramento?: string
   ambulanciaId: string
-  paramedicosIds: string[]
+  paramedicos?: { id: string; name: string; cargo: string }[]
   logradouro: string
   numero: number
   bairro: string
@@ -90,14 +97,13 @@ export interface ParamedicoCreateDTO {
 
 export interface ParamedicoGetDTO {
   id: string
-  nome: string
+  name: string
   cpf: string
   telefone: string
   email: string
   identificadorProfissional: string
   cargo: string
   ocupado: boolean
-  criadoEm: string
 }
 
 // Ambulancia DTOs
@@ -134,7 +140,30 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
-    throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`)
+    let mensagem: string = errorData.mensagem || errorData.message || ''
+
+    if (errorData.errors && !Array.isArray(errorData.errors) && typeof errorData.errors === 'object') {
+      const detalhes = Object.values(errorData.errors).flat().join(' ')
+      if (detalhes) mensagem = mensagem ? `${mensagem} ${detalhes}` : detalhes
+    }
+
+    const listaErros = Array.isArray(errorData.erros)
+      ? errorData.erros
+      : Array.isArray(errorData.errors)
+        ? errorData.errors
+        : null
+    if (listaErros && listaErros.length) {
+      const textos = listaErros
+        .map((e: unknown) =>
+          typeof e === 'string' ? e : (e as { description?: string })?.description ?? '',
+        )
+        .filter(Boolean)
+        .join(' ')
+      if (textos) mensagem = mensagem ? `${mensagem} ${textos}` : textos
+    }
+
+    if (!mensagem) mensagem = errorData.title || `Erro ${response.status}: ${response.statusText}`
+    throw new Error(mensagem)
   }
 
   if (response.status === 204) return {} as T
@@ -182,6 +211,14 @@ export const chamadosApi = {
 
   obter: (id: string): Promise<ChamadoGetDto> =>
     request<ChamadoGetDto>(`/chamados/${id}`),
+
+  despachar: (id: string, idAmbulancia: string) =>
+    request<ChamadoGetDto>(`/chamados/${id}/despachar?idAmbulancia=${idAmbulancia}`, {
+      method: 'POST',
+    }),
+
+  encerrar: (id: string) =>
+    request<ChamadoGetDto>(`/chamados/${id}/encerrar`, { method: 'POST' }),
 }
 
 /**
@@ -220,12 +257,9 @@ export const ambulanciasApi = {
       body: JSON.stringify(data),
     }),
 
-  atualizar: (id: string, data: Partial<AmbulanciaCreateDTO & { status: number }>) =>
-    request<AmbulanciaGetDTO>(`/ambulancias/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    }),
+  atualizarStatus: (id: string, status: number) =>
+    request<AmbulanciaGetDTO>(`/ambulancias/${id}/status?status=${status}`, { method: 'PATCH' }),
 
   deletar: (id: string) =>
-    request<void>(`/ambulancias/${id}`, { method: 'DELETE' }),
+    request<void>(`/ambulancias?id=${id}`, { method: 'DELETE' }),
 }

@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChamadoGetDto, ParamedicoGetDTO, chamadosApi, paramedicosApi } from '@/api/index'
+import {
+  chamadosApi,
+  paramedicosApi,
+  ambulanciasApi,
+  type ChamadoGetDto,
+  type ParamedicoGetDTO,
+  type AmbulanciaGetDTO,
+} from '@/api/index'
 
 const router = useRouter()
 const sidebarAberta = ref(false)
@@ -9,6 +16,12 @@ const mostrarModalSair = ref(false)
 
 const chamados = ref<ChamadoGetDto[]>([])
 const paramedicos = ref<ParamedicoGetDTO[]>([])
+const ambulancias = ref<AmbulanciaGetDTO[]>([])
+
+function ambulanciaDe(id?: string): AmbulanciaGetDTO | undefined {
+  if (!id) return undefined
+  return ambulancias.value.find((a) => a.id === id)
+}
 const carregandoChamados = ref(true)
 const carregandoParamedicos = ref(true)
 const erroChamados = ref<string | null>(null)
@@ -16,9 +29,9 @@ const erroParamedicos = ref<string | null>(null)
 
 const usuarioNome = ref(localStorage.getItem('usuario_nome') || 'Usuário')
 
-const totalAbertos = computed(() => chamados.value.filter((c: ChamadoGetDto) => c.status === 0).length)
-const totalEmAtendimento = computed(() => chamados.value.filter((c: ChamadoGetDto) => c.status === 1).length)
-const totalFinalizados = computed(() => chamados.value.filter((c: ChamadoGetDto) => c.status === 2).length)
+const totalAbertos = computed(() => chamados.value.filter((c: ChamadoGetDto) => c.statusChamado === 0).length)
+const totalEmAtendimento = computed(() => chamados.value.filter((c: ChamadoGetDto) => c.statusChamado === 1).length)
+const totalFinalizados = computed(() => chamados.value.filter((c: ChamadoGetDto) => c.statusChamado === 2).length)
 
 const paramedicosDisponiveis = computed(() => paramedicos.value.filter((p: ParamedicoGetDTO) => !p.ocupado))
 
@@ -93,6 +106,39 @@ async function carregarDados() {
     erroParamedicos.value = e instanceof Error ? e.message : 'Erro ao carregar paramédicos'
   } finally {
     carregandoParamedicos.value = false
+  }
+
+  try {
+    ambulancias.value = await ambulanciasApi.listar(1, 50)
+  } catch {
+    ambulancias.value = []
+  }
+}
+
+const acaoChamadoId = ref<string | null>(null)
+
+async function despacharChamado(chamado: ChamadoGetDto) {
+  acaoChamadoId.value = chamado.id
+  try {
+    await chamadosApi.despachar(chamado.id, chamado.ambulanciaId)
+    await carregarDados()
+  } catch (e: unknown) {
+    alert(e instanceof Error ? e.message : 'Erro ao despachar chamado')
+  } finally {
+    acaoChamadoId.value = null
+  }
+}
+
+async function encerrarChamado(chamado: ChamadoGetDto) {
+  if (!confirm('Encerrar este chamado? A ambulância e os paramédicos serão liberados.')) return
+  acaoChamadoId.value = chamado.id
+  try {
+    await chamadosApi.encerrar(chamado.id)
+    await carregarDados()
+  } catch (e: unknown) {
+    alert(e instanceof Error ? e.message : 'Erro ao encerrar chamado')
+  } finally {
+    acaoChamadoId.value = null
   }
 }
 
@@ -173,7 +219,7 @@ onMounted(carregarDados)
       </nav>
     </aside>
     <header
-      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-40 border-b border-slate-100 dark:border-slate-800"
+      class="flex justify-between items-center w-full lg:pl-72 px-4 lg:pr-8 h-20 fixed top-0 bg-white dark:bg-slate-950 z-40 border-b border-slate-100 dark:border-slate-800"
     >
       <div class="flex items-center gap-3">
         <button
@@ -204,7 +250,7 @@ onMounted(carregarDados)
         </div>
       </div>
     </header>
-    <main class="lg:pl-72 px-4 lg:pr-8 pt-28 pb-12 min-h-screen">
+    <main class="lg:pl-72 px-4 lg:pr-8 pt-32 lg:pt-36 pb-12 min-h-screen">
       <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <div
           class="bg-white p-6 rounded-xl shadow-sm flex items-center space-x-4 border-l-4 border-l-red-500"
@@ -309,7 +355,7 @@ onMounted(carregarDados)
           <div
             v-for="chamado in chamados"
             :key="chamado.id"
-            :class="['bg-white p-5 rounded-xl flex items-center border-l-8 shadow-sm hover:translate-x-1 transition-transform cursor-pointer', statusBg[chamado.status] as string]"
+            :class="['bg-white p-5 rounded-xl flex items-center border-l-8 shadow-sm hover:translate-x-1 transition-transform cursor-pointer', statusBg[chamado.statusChamado] as string]"
           >
             <div class="flex-1">
               <div class="flex items-center space-x-3 mb-1">
@@ -324,25 +370,58 @@ onMounted(carregarDados)
               <div class="flex items-center space-x-4 text-xs text-slate-400">
                 <span class="flex items-center">
                   <span class="material-symbols-outlined text-base mr-1">schedule</span>
-                  {{ tempoRelativo(chamado.criadoEm) }}
+                  {{ tempoRelativo(chamado.dataAbertura) }}
                 </span>
                 <span class="flex items-center">
                   <span class="material-symbols-outlined text-base mr-1">location_on</span>
                   {{ chamado.bairro }}, {{ chamado.cidade }}
                 </span>
               </div>
+              <div
+                v-if="ambulanciaDe(chamado.ambulanciaId)"
+                class="flex items-center gap-1.5 text-xs font-semibold text-blue-900 mt-2"
+              >
+                <span class="material-symbols-outlined text-base">ambulance</span>
+                {{ ambulanciaDe(chamado.ambulanciaId)?.placa }}
+                <span class="text-slate-400 font-normal"
+                  >· {{ ambulanciaDe(chamado.ambulanciaId)?.tipo || 'Tipo não informado' }}</span
+                >
+              </div>
+              <div
+                v-if="chamado.paramedicos && chamado.paramedicos.length"
+                class="flex flex-wrap items-center gap-1.5 mt-2"
+              >
+                <span
+                  v-for="p in chamado.paramedicos"
+                  :key="p.id"
+                  class="inline-flex items-center gap-1 text-[11px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full"
+                >
+                  <span class="material-symbols-outlined text-xs">person</span>
+                  {{ p.name }}
+                  <span class="text-slate-400 capitalize">· {{ p.cargo }}</span>
+                </span>
+              </div>
             </div>
             <div class="text-right">
-              <span :class="['block text-xs font-bold mb-1', statusClasse[chamado.status]]">
-                {{ statusLabel[chamado.status] }}
+              <span :class="['block text-xs font-bold mb-1', statusClasse[chamado.statusChamado]]">
+                {{ statusLabel[chamado.statusChamado] }}
               </span>
-              <RouterLink
-                v-if="chamado.status === 0"
-                to="/chamado"
-                class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-blue-800 transition-colors inline-block"
+              <button
+                v-if="chamado.statusChamado === 0"
+                @click="despacharChamado(chamado)"
+                :disabled="acaoChamadoId === chamado.id"
+                class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-blue-800 transition-colors inline-block disabled:opacity-60"
               >
-                ATENDER
-              </RouterLink>
+                {{ acaoChamadoId === chamado.id ? 'DESPACHANDO...' : 'DESPACHAR' }}
+              </button>
+              <button
+                v-else-if="chamado.statusChamado === 1"
+                @click="encerrarChamado(chamado)"
+                :disabled="acaoChamadoId === chamado.id"
+                class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors inline-block disabled:opacity-60 whitespace-nowrap"
+              >
+                {{ acaoChamadoId === chamado.id ? 'FINALIZANDO...' : 'Finalizar Atendimento' }}
+              </button>
             </div>
           </div>
         </section>
@@ -383,7 +462,7 @@ onMounted(carregarDados)
                 <span class="material-symbols-outlined text-emerald-600">person</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-bold text-slate-800 truncate">{{ para.nome }}</p>
+                <p class="font-bold text-slate-800 truncate">{{ para.name }}</p>
                 <p class="text-xs text-slate-400">{{ para.cargo }}</p>
               </div>
             </div>
