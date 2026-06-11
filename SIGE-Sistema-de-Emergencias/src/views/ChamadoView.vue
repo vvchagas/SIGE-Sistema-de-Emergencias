@@ -143,6 +143,11 @@ async function despacharChamado() {
     return
   }
 
+  if (form.paramedicos.length === 0) {
+    erro.value = 'Selecione pelo menos 1 profissional para a ambulância.'
+    return
+  }
+
   enviando.value = true
   try {
     await chamadosApi.criar({
@@ -275,7 +280,7 @@ onMounted(() => {
         <div class="mb-6">
           <h2 class="text-2xl font-extrabold text-indigo-950">Novo Chamado</h2>
           <p class="text-sm text-slate-500">
-            Preencha os dados com precisão para despacho imediato.
+            Preencha os dados para abrir o chamado.
           </p>
           <p class="text-sm text-red-500 font-bold mt-1">(*) Campos obrigatórios</p>
         </div>
@@ -578,8 +583,8 @@ onMounted(() => {
                   v-if="enviando"
                   class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
                 ></span>
-                <span v-else class="material-symbols-outlined">directions_car</span>
-                {{ enviando ? 'Despachando...' : 'Despachar Ambulância' }}
+                <span v-else class="material-symbols-outlined">add_circle</span>
+                {{ enviando ? 'Abrindo...' : 'Abrir Chamado' }}
               </button>
               <RouterLink to="/dashboard">
                 <button
